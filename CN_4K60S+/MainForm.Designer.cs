@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -38,11 +39,13 @@
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.bttn_drive_refresh = new System.Windows.Forms.Button();
             this.comboBox_drives = new System.Windows.Forms.ComboBox();
-            this.treeView1 = new System.Windows.Forms.TreeView();
             this.tabControl_main = new System.Windows.Forms.TabControl();
             this.tabPage_overview = new System.Windows.Forms.TabPage();
             this.tabPage_encoding_settings = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
+            this.dtlv_filelist = new BrightIdeasSoftware.DataTreeListView();
+            this.olvColumn_name = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumn_size = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.menuStrip1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -51,6 +54,7 @@
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.tabControl_main.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dtlv_filelist)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -113,7 +117,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl_main);
             this.splitContainer1.Size = new System.Drawing.Size(800, 417);
-            this.splitContainer1.SplitterDistance = 227;
+            this.splitContainer1.SplitterDistance = 265;
             this.splitContainer1.TabIndex = 1;
             // 
             // splitContainer2
@@ -133,15 +137,15 @@
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.treeView1);
-            this.splitContainer2.Size = new System.Drawing.Size(227, 417);
+            this.splitContainer2.Panel2.Controls.Add(this.dtlv_filelist);
+            this.splitContainer2.Size = new System.Drawing.Size(265, 417);
             this.splitContainer2.SplitterDistance = 25;
             this.splitContainer2.TabIndex = 0;
             // 
             // bttn_drive_refresh
             // 
             this.bttn_drive_refresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bttn_drive_refresh.Location = new System.Drawing.Point(170, 3);
+            this.bttn_drive_refresh.Location = new System.Drawing.Point(208, 3);
             this.bttn_drive_refresh.Name = "bttn_drive_refresh";
             this.bttn_drive_refresh.Size = new System.Drawing.Size(57, 21);
             this.bttn_drive_refresh.TabIndex = 1;
@@ -156,16 +160,9 @@
             this.comboBox_drives.FormattingEnabled = true;
             this.comboBox_drives.Location = new System.Drawing.Point(43, 3);
             this.comboBox_drives.Name = "comboBox_drives";
-            this.comboBox_drives.Size = new System.Drawing.Size(121, 20);
+            this.comboBox_drives.Size = new System.Drawing.Size(159, 20);
             this.comboBox_drives.TabIndex = 0;
-            // 
-            // treeView1
-            // 
-            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeView1.Location = new System.Drawing.Point(0, 0);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(227, 388);
-            this.treeView1.TabIndex = 0;
+            this.comboBox_drives.SelectedIndexChanged += new System.EventHandler(this.comboBox_drives_SelectedIndexChanged);
             // 
             // tabControl_main
             // 
@@ -175,7 +172,7 @@
             this.tabControl_main.Location = new System.Drawing.Point(0, 0);
             this.tabControl_main.Name = "tabControl_main";
             this.tabControl_main.SelectedIndex = 0;
-            this.tabControl_main.Size = new System.Drawing.Size(569, 417);
+            this.tabControl_main.Size = new System.Drawing.Size(531, 417);
             this.tabControl_main.TabIndex = 0;
             // 
             // tabPage_overview
@@ -183,7 +180,7 @@
             this.tabPage_overview.Location = new System.Drawing.Point(4, 22);
             this.tabPage_overview.Name = "tabPage_overview";
             this.tabPage_overview.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_overview.Size = new System.Drawing.Size(561, 391);
+            this.tabPage_overview.Size = new System.Drawing.Size(523, 391);
             this.tabPage_overview.TabIndex = 0;
             this.tabPage_overview.Text = "Overview";
             this.tabPage_overview.UseVisualStyleBackColor = true;
@@ -207,6 +204,40 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Drive:";
             // 
+            // dtlv_filelist
+            // 
+            this.dtlv_filelist.AllColumns.Add(this.olvColumn_name);
+            this.dtlv_filelist.AllColumns.Add(this.olvColumn_size);
+            this.dtlv_filelist.CellEditUseWholeCell = false;
+            this.dtlv_filelist.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.olvColumn_name,
+            this.olvColumn_size});
+            this.dtlv_filelist.Cursor = System.Windows.Forms.Cursors.Default;
+            this.dtlv_filelist.DataSource = null;
+            this.dtlv_filelist.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dtlv_filelist.HideSelection = false;
+            this.dtlv_filelist.Location = new System.Drawing.Point(0, 0);
+            this.dtlv_filelist.Name = "dtlv_filelist";
+            this.dtlv_filelist.RootKeyValueString = "";
+            this.dtlv_filelist.ShowGroups = false;
+            this.dtlv_filelist.Size = new System.Drawing.Size(265, 388);
+            this.dtlv_filelist.TabIndex = 0;
+            this.dtlv_filelist.UseCompatibleStateImageBehavior = false;
+            this.dtlv_filelist.View = System.Windows.Forms.View.Details;
+            this.dtlv_filelist.VirtualMode = true;
+            // 
+            // olvColumn_name
+            // 
+            this.olvColumn_name.AspectName = "name";
+            this.olvColumn_name.Text = "Name";
+            this.olvColumn_name.Width = 180;
+            // 
+            // olvColumn_size
+            // 
+            this.olvColumn_size.AspectName = "size_friendly";
+            this.olvColumn_size.Text = "Size";
+            this.olvColumn_size.Width = 84;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -227,6 +258,7 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
             this.tabControl_main.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dtlv_filelist)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -247,8 +279,10 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Button bttn_drive_refresh;
         private System.Windows.Forms.ComboBox comboBox_drives;
-        private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.Label label1;
+        private BrightIdeasSoftware.DataTreeListView dtlv_filelist;
+        private BrightIdeasSoftware.OLVColumn olvColumn_name;
+        private BrightIdeasSoftware.OLVColumn olvColumn_size;
     }
 }
 
