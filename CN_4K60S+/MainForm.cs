@@ -108,13 +108,25 @@ namespace CN_4K60S_
         }
 
         public class vid_file_info {
-            public vid_file_info(string path, MainForm form, bool segmented = false) {
+            public vid_file_info(string _path, MainForm form, bool segmented = false) {
                 string stem, npath;
                 int i;
 
                 // Basic file information
+                path = _path;
                 fi = new FileInfo(path);
                 name = Path.GetFileName(path);
+                is_segment = segmented;
+
+                // More video information
+                MediaInfo.MediaInfo mi = new MediaInfo.MediaInfo();
+                mi.Open(path);
+                resolution = mi.Get(MediaInfo.StreamKind.Video, 0, "Width").ToString()
+                    + "x" + mi.Get(MediaInfo.StreamKind.Video, 0, "Height").ToString();
+                vcodec = mi.Get(MediaInfo.StreamKind.Video, 0, "Format");
+                acodec = mi.Get(MediaInfo.StreamKind.Audio, 0, "Format");
+                duration = mi.Get(MediaInfo.StreamKind.Video, 0, "Duration/String3");
+                mi.Close();
 
                 // Assume this is a segment
                 segments = new List<vid_file_info>();
@@ -148,7 +160,13 @@ namespace CN_4K60S_
 
             public string name { get; set; }
             public long size { get; set; }
+            public string path { get; set; }
             public string size_friendly { get; set; }
+            public bool is_segment { get; set; }
+            public string resolution { get; set; }
+            public string duration { get; set; }
+            public string vcodec { get; set; }
+            public string acodec { get; set; }
             public List<vid_file_info> segments;
             public FileInfo fi;
         }
@@ -195,6 +213,42 @@ namespace CN_4K60S_
             drive = name.Substring(0, 1);
 
             detect_videos_on_drive(drive);
+        }
+
+        public void populate_details_area(List<vid_file_info> segments) {
+            DataSet ds = new DataSet();
+            DataTable dt = ds.Tables.Add("Segments");
+            dt.Columns.Add("name");
+            dt.Columns.Add("duration");
+            dt.Columns.Add("resolution");
+            dt.Columns.Add("vcodec");
+            dt.Columns.Add("acodec");
+            dt.Columns.Add("size_friendly");
+
+            foreach (vid_file_info segment in segments) {
+                dt.Rows.Add(new string[] {
+                    segment.name,
+                    segment.duration,
+                    segment.resolution,
+                    segment.vcodec,
+                    segment.acodec,
+                    segment.size_friendly
+                });
+            }
+            
+            dlv_inner_detail.DataSource = new DataView(ds.Tables["Segments"]);
+        }
+
+        private void dtlv_filelist_SelectedIndexChanged(object sender, EventArgs e) {
+            if (dtlv_filelist.SelectedIndex == -1)
+                return;
+
+            vid_file_info obj = (vid_file_info) dtlv_filelist.SelectedObject;
+            textBox_filepath.Text = obj.path;
+
+            if (!obj.is_segment) {
+                populate_details_area(obj.segments);
+            }
         }
     }
 }
