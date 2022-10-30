@@ -15,5 +15,15 @@ namespace CN_4K60S_
         {
             InitializeComponent();
         }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form settings = new Settings();
+            settings.ShowDialog();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e) {
+            this.Close();
+        }
     }
 }
