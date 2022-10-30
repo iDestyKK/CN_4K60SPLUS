@@ -40,6 +40,27 @@ namespace CN_4K60S_
 
         private app_settings _settings = new app_settings();
 
+        public string bytes_to_friendly(long value) {
+            string[] tier_s = {
+                "bytes", "KiB", "MiB", "GiB",
+                "TiB", "PiB", "EiB", "ZiB",
+                "YiB" 
+            };
+
+            int tier;
+            double v;
+
+            tier = 0;
+            v = value;
+
+            while (v >= 1024) {
+                tier++;
+                v /= 1024;
+            }
+
+            return (Math.Round(v * 100) / 100).ToString() + " " + tier_s[tier];
+        }
+
         public MainForm()
         {
             InitializeComponent();
@@ -57,6 +78,28 @@ namespace CN_4K60S_
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Close();
+        }
+
+        private void bttn_drive_refresh_Click(object sender, EventArgs e) {
+            // Wipe out all items
+            comboBox_drives.Items.Clear();
+
+            // Go through all drives
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo d in allDrives) {
+                // If not a USB/SD drive, it can't be it
+                if (d.DriveType != DriveType.Removable)
+                    continue;
+
+                // If the /Elgato/Videos directory doesn't exist, invalid
+                if (!Directory.Exists(d.Name + "Elgato\\Videos"))
+                    continue;
+
+                comboBox_drives.Items.Add(
+                    d.ToString() + " - " + bytes_to_friendly(d.TotalSize)
+                );
+            }
         }
     }
 }
