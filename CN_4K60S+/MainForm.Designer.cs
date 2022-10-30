@@ -1,6 +1,6 @@
 ﻿namespace CN_4K60S_
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// 必要なデザイナー変数です。
