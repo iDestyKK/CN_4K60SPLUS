@@ -107,6 +107,37 @@ namespace CN_4K60S_
             refresh_drives();
         }
 
+        public enum container {
+            mkv,
+            mp4,
+            avi
+        }
+
+        public enum video_select {
+            copy,
+            x265,
+            x264
+        }
+
+        public enum audio_select {
+            copy,
+            flac,
+            wav_separate
+        }
+
+        public enum video_preset {
+            placebo,
+            veryslow,
+            slower,
+            slow,
+            medium,
+            fast,
+            faster,
+            veryfast,
+            superfast,
+            ultrafast
+        }
+
         public class vid_file_info {
             public vid_file_info(string _path, MainForm form, bool segmented = false) {
                 string stem, npath;
@@ -121,11 +152,28 @@ namespace CN_4K60S_
                 // More video information
                 MediaInfo.MediaInfo mi = new MediaInfo.MediaInfo();
                 mi.Open(path);
+
+                // General
+                file_format = fi.Extension.Substring(1).ToUpper()
+                    + " (" + mi.Get(MediaInfo.StreamKind.General, 0, "Format") + ")";
+
+                // Video Metadata
                 resolution = mi.Get(MediaInfo.StreamKind.Video, 0, "Width").ToString()
                     + "x" + mi.Get(MediaInfo.StreamKind.Video, 0, "Height").ToString();
                 vcodec = mi.Get(MediaInfo.StreamKind.Video, 0, "Format");
+                duration = Convert.ToDouble(mi.Get(MediaInfo.StreamKind.Video, 0, "Duration"));
+                duration_s = mi.Get(MediaInfo.StreamKind.Video, 0, "Duration/String3");
+                colour_space = mi.Get(MediaInfo.StreamKind.Video, 0, "ColorSpace");
+                chroma_subsampling = mi.Get(MediaInfo.StreamKind.Video, 0, "ChromaSubsampling");
+                bit_depth = mi.Get(MediaInfo.StreamKind.Video, 0, "BitDepth");
+                fps = mi.Get(MediaInfo.StreamKind.Video, 0, "FrameRate");
+
+                // Audio Metadata
                 acodec = mi.Get(MediaInfo.StreamKind.Audio, 0, "Format");
-                duration = mi.Get(MediaInfo.StreamKind.Video, 0, "Duration/String3");
+                a_bitrate = mi.Get(MediaInfo.StreamKind.Audio, 0, "BitRate/String");
+                sample_rate = mi.Get(MediaInfo.StreamKind.Audio, 0, "SamplingRate");
+                channels = mi.Get(MediaInfo.StreamKind.Audio, 0, "Channels");
+
                 mi.Close();
 
                 // Assume this is a segment
@@ -146,9 +194,11 @@ namespace CN_4K60S_
 
                     // Size is total of all segments
                     size = 0;
+                    duration = 0;
 
                     foreach (vid_file_info segment in segments) {
                         size += segment.size;
+                        duration += segment.duration;
                     }
                 }
                 else {
@@ -156,17 +206,42 @@ namespace CN_4K60S_
                 }
 
                 size_friendly = form.bytes_to_friendly(size);
+
+                // Video encoding settings set to default
+                setting_container    = container.mkv;
+                setting_video        = video_select.copy;
+                setting_audio        = audio_select.copy;
+                setting_crf          = 17;
+                setting_video_preset = video_preset.medium;
             }
 
+            // Stream information
             public string name { get; set; }
             public long size { get; set; }
             public string path { get; set; }
             public string size_friendly { get; set; }
             public bool is_segment { get; set; }
             public string resolution { get; set; }
-            public string duration { get; set; }
+            public double duration { get; set; }
+            public string duration_s { get; set; }
             public string vcodec { get; set; }
+            public string colour_space { get; set; }
+            public string chroma_subsampling { get; set; }
+            public string bit_depth { get; set; }
             public string acodec { get; set; }
+            public string a_bitrate { get; set; }
+            public string sample_rate { get; set; }
+            public string channels { get; set; }
+            public string fps { get; set; }
+            public string file_format { get; set; }
+
+            // Video encoding information
+            public container setting_container { get; set; }
+            public video_select setting_video { get; set; }
+            public audio_select setting_audio { get; set; }
+            public int setting_crf { get; set; }
+            public video_preset setting_video_preset { get; set;}
+
             public List<vid_file_info> segments;
             public FileInfo fi;
         }
@@ -219,7 +294,7 @@ namespace CN_4K60S_
             DataSet ds = new DataSet();
             DataTable dt = ds.Tables.Add("Segments");
             dt.Columns.Add("name");
-            dt.Columns.Add("duration");
+            dt.Columns.Add("duration_s");
             dt.Columns.Add("resolution");
             dt.Columns.Add("vcodec");
             dt.Columns.Add("acodec");
@@ -228,7 +303,7 @@ namespace CN_4K60S_
             foreach (vid_file_info segment in segments) {
                 dt.Rows.Add(new string[] {
                     segment.name,
-                    segment.duration,
+                    segment.duration_s,
                     segment.resolution,
                     segment.vcodec,
                     segment.acodec,
@@ -244,11 +319,153 @@ namespace CN_4K60S_
                 return;
 
             vid_file_info obj = (vid_file_info) dtlv_filelist.SelectedObject;
-            textBox_filepath.Text = obj.path;
 
-            if (!obj.is_segment) {
+            // Update info in visual tab
+            textBox_filepath.Text = obj.path;
+            label_segment_count.Text = obj.segments.Count.ToString();
+            label_total_size.Text = obj.size_friendly + " (" + obj.size.ToString() + " bytes)";
+            label_vcodec.Text = obj.vcodec;
+            label_acodec.Text = obj.acodec;
+            label_colour_space.Text = obj.colour_space;
+            label_subsampling.Text = obj.chroma_subsampling;
+            label_bitdepth.Text = obj.bit_depth;
+            label_resolution.Text = obj.resolution;
+            label_fps.Text = obj.fps;
+            label_channels.Text = obj.channels;
+            label_audio_bitrate.Text = obj.a_bitrate;
+            label_sample_rate.Text = obj.sample_rate + " Hz";
+            label_format.Text = obj.file_format;
+
+            // Duration in 2 separate ways
+            TimeSpan t = TimeSpan.FromMilliseconds(obj.duration);
+
+            label_duration.Text = String.Format(
+                "{0:D2}:{1:D2}:{2:D2}:{3:D3}", t.Hours, t.Minutes, t.Seconds, t.Milliseconds
+            );
+            label_duration.Text += " (" + (obj.duration / 1000).ToString() + " seconds)";
+
+            // If not a segment, update the details tab
+            if (!obj.is_segment)
                 populate_details_area(obj.segments);
+
+            // Update radio buttons and video encoding settings
+            numericUpDown_crf.Value = obj.setting_crf;
+            comboBox_preset.SelectedIndex = (int) obj.setting_video_preset;
+
+            RadioButton[] container_arr = {
+                radioButton_mkv,
+                radioButton_mp4,
+                radioButton_avi
+            };
+
+            RadioButton[] vsetting_arr = {
+                radioButton_video_copy,
+                radioButton_video_x265,
+                radioButton_video_x264
+            };
+
+            RadioButton[] asetting_arr = {
+                radioButton_audio_copy,
+                radioButton_audio_flac,
+                radioButton_audio_wav_separate
+            };
+
+            for (int i = 0; i < 3; i++) {
+                container_arr[i].Checked = ((int) obj.setting_container) == i;
+                vsetting_arr [i].Checked = ((int) obj.setting_video) == i;
+                asetting_arr [i].Checked = ((int) obj.setting_audio) == i;
             }
+        }
+
+        private void radioButton_mkv_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_mkv.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_container = container.mkv;
+        }
+
+        private void radioButton_mp4_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_mp4.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_container = container.mp4;
+        }
+
+        private void radioButton_avi_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_avi.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_container = container.avi;
+        }
+
+        private void radioButton_video_copy_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_video_copy.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_video = video_select.copy;
+            label_video_codec.Text = "-";
+            comboBox_preset.Enabled = false;
+            numericUpDown_crf.Enabled = false;
+        }
+
+        private void radioButton_video_x265_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_video_x265.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_video = video_select.x265;
+            label_video_codec.Text = "libx265";
+            comboBox_preset.Enabled = true;
+            numericUpDown_crf.Enabled = true;
+        }
+
+        private void radioButton_video_x264_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_video_x264.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_video = video_select.x264;
+            label_video_codec.Text = "libx264";
+            comboBox_preset.Enabled = true;
+            numericUpDown_crf.Enabled = true;
+        }
+
+        private void radioButton_audio_copy_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_audio_copy.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_audio = audio_select.copy;
+        }
+
+        private void radioButton_audio_flac_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_audio_flac.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_audio = audio_select.flac;
+        }
+
+        private void radioButton_audio_wav_separate_CheckedChanged(object sender, EventArgs e) {
+            if (!radioButton_audio_wav_separate.Checked)
+                return;
+
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_audio = audio_select.wav_separate;
+        }
+
+        private void numericUpDown_crf_ValueChanged(object sender, EventArgs e) {
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_crf = (int) numericUpDown_crf.Value;
+        }
+
+        private void comboBox_preset_SelectedIndexChanged(object sender, EventArgs e) {
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            obj.setting_video_preset = (video_preset) comboBox_preset.SelectedIndex;
         }
     }
 }
