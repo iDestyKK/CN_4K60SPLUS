@@ -213,6 +213,9 @@ namespace CN_4K60S_
                 setting_audio        = audio_select.copy;
                 setting_crf          = 17;
                 setting_video_preset = video_preset.medium;
+
+                // Metadata too
+                title = "";
             }
 
             // Stream information
@@ -234,6 +237,7 @@ namespace CN_4K60S_
             public string channels { get; set; }
             public string fps { get; set; }
             public string file_format { get; set; }
+            public string title { get; set; }
 
             // Video encoding information
             public container setting_container { get; set; }
@@ -315,10 +319,14 @@ namespace CN_4K60S_
         }
 
         private void dtlv_filelist_SelectedIndexChanged(object sender, EventArgs e) {
-            if (dtlv_filelist.SelectedIndex == -1)
+            if (dtlv_filelist.SelectedIndex == -1) {
+                tabControl_main.Enabled = false;
                 return;
+            }
 
             vid_file_info obj = (vid_file_info) dtlv_filelist.SelectedObject;
+
+            tabControl_main.Enabled = true;
 
             // Update info in visual tab
             textBox_filepath.Text = obj.path;
@@ -343,6 +351,8 @@ namespace CN_4K60S_
                 "{0:D2}:{1:D2}:{2:D2}:{3:D3}", t.Hours, t.Minutes, t.Seconds, t.Milliseconds
             );
             label_duration.Text += " (" + (obj.duration / 1000).ToString() + " seconds)";
+
+            textBox_vid_title.Text = obj.title;
 
             // If not a segment, update the details tab
             if (!obj.is_segment)
@@ -466,6 +476,149 @@ namespace CN_4K60S_
         private void comboBox_preset_SelectedIndexChanged(object sender, EventArgs e) {
             vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
             obj.setting_video_preset = (video_preset) comboBox_preset.SelectedIndex;
+        }
+
+        string ffmpeg_cmd_generate(string output_path) {
+            string cmd;
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            string[] preset_vals = {
+                "placebo",
+                "veryslow",
+                "slower",
+                "slow",
+                "medium",
+                "fast",
+                "faster",
+                "veryfast",
+                "superfast",
+                "ultrafast"
+            };
+
+            // Start off with the path to FFmpeg
+            // cmd = _settings.paths["FFmpeg"];
+            cmd = "";
+
+            // Go based on input, but make "CONCAT_FILE" replacable
+            cmd += "-f concat -safe 0 -i CONCAT_FILE";
+
+            if (obj.setting_audio == audio_select.wav_separate)
+                cmd += " -map 0:v";
+            else
+                cmd += " -map 0";
+
+            // Codec selection
+            switch (obj.setting_video) {
+                default:
+                case video_select.copy:
+                    cmd += " -c:v copy";
+                    break;
+
+                case video_select.x265:
+                    cmd += " -c:v libx265";
+                    cmd += " -crf " + obj.setting_crf.ToString();
+                    cmd += " -preset " + preset_vals[(int) obj.setting_video_preset];
+                    break;
+
+                case video_select.x264:
+                    cmd += " -c:v libx264";
+                    cmd += " -crf " + obj.setting_crf.ToString();
+                    cmd += " -preset " + preset_vals[(int)obj.setting_video_preset];
+                    break;
+            }
+
+            // Audio selection
+            switch (obj.setting_audio) {
+                default:
+                case audio_select.copy:
+                    cmd += " -c:a copy";
+                    break;
+
+                case audio_select.flac:
+                    cmd += " -c:a flac -compression_level 12";
+                    break;
+
+                case audio_select.wav_separate:
+                    // Deal with it after final file is created
+                    break;
+            }
+
+            // Metadata if possible
+            if (obj.title != "") {
+                cmd += " -metadata title=\"" + obj.title.Replace("\"", "\\\"") + "\"";
+            }
+
+            // Closing command, file to write
+            cmd += " -y \"" + output_path + "\"";
+
+            // But if "separate WAV" is selected, account a second simultaneous output
+            if (obj.setting_audio == audio_select.wav_separate) {
+                cmd += " -map 0:a:0 -c:a copy \"";
+                cmd += output_path.Replace(Path.GetExtension(output_path), ".wav");
+                cmd += "\"";
+            }
+
+            return cmd;
+        }
+
+        private void button_encode_video_Click(object sender, EventArgs e) {
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+            string concat_txt;
+            string ffmpeg_cmd;
+            SaveFileDialog sav_obj;
+
+            // Idiot-proof the encoding if FFmpeg doesn't exist at all
+            if (_settings.paths["FFmpeg"] == "") {
+                MessageBox.Show(
+                    "FFmpeg path is not configured. Set it up before " +
+                    "running a render job.",
+                    "FFmpeg not configured",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                return;
+            }
+
+            // Construct the concatenation file information
+            concat_txt = "";
+            foreach (vid_file_info segment in obj.segments)
+                concat_txt += "file '" + segment.path + "'\n";
+
+            // Get the filename for the output file
+            sav_obj = new SaveFileDialog();
+
+            switch (obj.setting_container) {
+                case container.mkv:
+                    sav_obj.Title = "Save MKV as";
+                    sav_obj.Filter = "Matroska Video (*.mkv)|*.mkv|All Files|*.*";
+                    break;
+
+                case container.mp4:
+                    sav_obj.Title = "Save MP4 as";
+                    sav_obj.Filter = "MP4 Video (*.mp4)|*.mp4|All Files|*.*";
+                    break;
+
+                case container.avi:
+                    sav_obj.Title = "Save AVI as";
+                    sav_obj.Filter = "Audio Video Interleave (*.avi)|*.avi|All Files|*.*";
+                    break;
+            }
+
+            // If the file procedure is cancelled, don't do anything
+            if (sav_obj.ShowDialog() != DialogResult.OK)
+                return;
+
+            // Construct the FFmpeg command
+            ffmpeg_cmd = ffmpeg_cmd_generate(sav_obj.FileName);
+
+            Form log_win = new ffmpeg_log(ffmpeg_cmd, concat_txt);
+            log_win.Show();
+        }
+
+        private void textBox_vid_title_TextChanged(object sender, EventArgs e) {
+            vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
+
+            obj.title = textBox_vid_title.Text;
         }
     }
 }

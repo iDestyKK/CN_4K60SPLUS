@@ -114,8 +114,11 @@
             this.comboBox_preset = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
             this.numericUpDown_crf = new System.Windows.Forms.NumericUpDown();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button_encode_video = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.utilityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractAndConcatAllSDCardVideosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutCN4K60SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -149,6 +152,7 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.utilityToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -187,6 +191,8 @@
             // 
             // helpToolStripMenuItem
             // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutCN4K60SToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
@@ -303,6 +309,7 @@
             this.tabControl_main.Controls.Add(this.tabPage_video_summary);
             this.tabControl_main.Controls.Add(this.tabPage_encoding_settings);
             this.tabControl_main.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl_main.Enabled = false;
             this.tabControl_main.Location = new System.Drawing.Point(0, 0);
             this.tabControl_main.Name = "tabControl_main";
             this.tabControl_main.SelectedIndex = 0;
@@ -957,7 +964,7 @@
             this.tabPage_video_advanced.Location = new System.Drawing.Point(4, 22);
             this.tabPage_video_advanced.Name = "tabPage_video_advanced";
             this.tabPage_video_advanced.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_video_advanced.Size = new System.Drawing.Size(545, 313);
+            this.tabPage_video_advanced.Size = new System.Drawing.Size(545, 354);
             this.tabPage_video_advanced.TabIndex = 1;
             this.tabPage_video_advanced.Text = "Video Settings";
             this.tabPage_video_advanced.UseVisualStyleBackColor = true;
@@ -968,7 +975,7 @@
             this.tabPage_metadata.Controls.Add(this.label20);
             this.tabPage_metadata.Location = new System.Drawing.Point(4, 22);
             this.tabPage_metadata.Name = "tabPage_metadata";
-            this.tabPage_metadata.Size = new System.Drawing.Size(553, 359);
+            this.tabPage_metadata.Size = new System.Drawing.Size(545, 354);
             this.tabPage_metadata.TabIndex = 2;
             this.tabPage_metadata.Text = "Information";
             this.tabPage_metadata.UseVisualStyleBackColor = true;
@@ -988,8 +995,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_vid_title.Location = new System.Drawing.Point(70, 6);
             this.textBox_vid_title.Name = "textBox_vid_title";
-            this.textBox_vid_title.Size = new System.Drawing.Size(480, 19);
+            this.textBox_vid_title.Size = new System.Drawing.Size(472, 19);
             this.textBox_vid_title.TabIndex = 1;
+            this.textBox_vid_title.TextChanged += new System.EventHandler(this.textBox_vid_title_TextChanged);
             // 
             // label21
             // 
@@ -1067,29 +1075,50 @@
             0});
             this.numericUpDown_crf.ValueChanged += new System.EventHandler(this.numericUpDown_crf_ValueChanged);
             // 
-            // button1
+            // button_encode_video
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.BackColor = System.Drawing.Color.Red;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(456, 8);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(105, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "Encode Video";
-            this.button1.UseVisualStyleBackColor = false;
+            this.button_encode_video.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_encode_video.BackColor = System.Drawing.Color.Red;
+            this.button_encode_video.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button_encode_video.ForeColor = System.Drawing.Color.White;
+            this.button_encode_video.Location = new System.Drawing.Point(456, 8);
+            this.button_encode_video.Name = "button_encode_video";
+            this.button_encode_video.Size = new System.Drawing.Size(105, 23);
+            this.button_encode_video.TabIndex = 5;
+            this.button_encode_video.Text = "Encode Video";
+            this.button_encode_video.UseVisualStyleBackColor = false;
+            this.button_encode_video.Click += new System.EventHandler(this.button_encode_video_Click);
             // 
             // panel1
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.LightGray;
-            this.panel1.Controls.Add(this.button1);
+            this.panel1.Controls.Add(this.button_encode_video);
             this.panel1.Location = new System.Drawing.Point(0, 393);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(567, 39);
             this.panel1.TabIndex = 6;
+            // 
+            // utilityToolStripMenuItem
+            // 
+            this.utilityToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.extractAndConcatAllSDCardVideosToolStripMenuItem});
+            this.utilityToolStripMenuItem.Name = "utilityToolStripMenuItem";
+            this.utilityToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.utilityToolStripMenuItem.Text = "Utility";
+            // 
+            // extractAndConcatAllSDCardVideosToolStripMenuItem
+            // 
+            this.extractAndConcatAllSDCardVideosToolStripMenuItem.Name = "extractAndConcatAllSDCardVideosToolStripMenuItem";
+            this.extractAndConcatAllSDCardVideosToolStripMenuItem.Size = new System.Drawing.Size(268, 22);
+            this.extractAndConcatAllSDCardVideosToolStripMenuItem.Text = "Extract and Concat all SD card videos";
+            // 
+            // aboutCN4K60SToolStripMenuItem
+            // 
+            this.aboutCN4K60SToolStripMenuItem.Name = "aboutCN4K60SToolStripMenuItem";
+            this.aboutCN4K60SToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.aboutCN4K60SToolStripMenuItem.Text = "About CN_4K60S+";
             // 
             // MainForm
             // 
@@ -1232,7 +1261,10 @@
         private System.Windows.Forms.Label label_video_codec;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_encode_video;
+        private System.Windows.Forms.ToolStripMenuItem utilityToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractAndConcatAllSDCardVideosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutCN4K60SToolStripMenuItem;
     }
 }
 
