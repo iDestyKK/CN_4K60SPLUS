@@ -393,6 +393,9 @@ namespace CN_4K60S_
 
             vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
             obj.setting_container = container.mkv;
+
+            radioButton_audio_copy.Enabled = true;
+            radioButton_audio_flac.Enabled = true;
         }
 
         private void radioButton_mp4_CheckedChanged(object sender, EventArgs e) {
@@ -401,6 +404,12 @@ namespace CN_4K60S_
 
             vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
             obj.setting_container = container.mp4;
+
+            radioButton_audio_copy.Enabled = false;
+            radioButton_audio_flac.Enabled = false;
+            radioButton_audio_copy.Checked = false;
+            radioButton_audio_flac.Checked = false;
+            radioButton_audio_wav_separate.Checked = true;
         }
 
         private void radioButton_avi_CheckedChanged(object sender, EventArgs e) {
@@ -409,6 +418,9 @@ namespace CN_4K60S_
 
             vid_file_info obj = (vid_file_info)dtlv_filelist.SelectedObject;
             obj.setting_container = container.avi;
+
+            radioButton_audio_copy.Enabled = true;
+            radioButton_audio_flac.Enabled = true;
         }
 
         private void radioButton_video_copy_CheckedChanged(object sender, EventArgs e) {
