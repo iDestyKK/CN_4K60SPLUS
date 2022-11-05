@@ -501,10 +501,7 @@ namespace CN_4K60S_
             // Go based on input, but make "CONCAT_FILE" replacable
             cmd += "-f concat -safe 0 -i CONCAT_FILE";
 
-            if (obj.setting_audio == audio_select.wav_separate)
-                cmd += " -map 0:v";
-            else
-                cmd += " -map 0";
+            cmd += " -map 0";
 
             // Codec selection
             switch (obj.setting_video) {
@@ -539,6 +536,8 @@ namespace CN_4K60S_
 
                 case audio_select.wav_separate:
                     // Deal with it after final file is created
+                    // But, put in a temporary 320kbps MP3 stream into the MP4
+                    cmd += " -c:a mp3 -b:a 320k";
                     break;
             }
 
