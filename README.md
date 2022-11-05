@@ -34,3 +34,6 @@ Planned features include:
 * One click solution to automatically concatenate and compress all files on the SD card while copying to disk.
 * Being able to upload to YouTube automatically via supplying a `client_secrets` file.
 * Queueing up render jobs so you don't have to interact with the program on a per-video basis
+
+## Preview
+![Preview](../assets/assets/screenshot.png?raw=true)
